@@ -8,9 +8,12 @@
 const THREE = require("three");
 
 function createRenderer() {
-  let renderer = new THREE.WebGLRenderer();
+  let renderer = new THREE.WebGLRenderer({
+    antialias: true,
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor("#16161d"); // Eigengrau
+  renderer.setPixelRatio(window.devicePixelRatio);
   let output = document.querySelector("#output");
   output.appendChild(renderer.domElement);
   return renderer;
@@ -37,19 +40,6 @@ function createAxesHelper() {
   return axesHelper;
 }
 
-function createCube() {
-  // Geometry - The actual shape/skeleton of the object
-  let geometry = new THREE.BoxGeometry(4, 4, 4);
-  // Material - The colour/how it interacts with light
-  let material = new THREE.MeshLambertMaterial({
-    color: "tomato",
-  });
-  // Create a mesh by combining the geometry and the material
-  let mesh = new THREE.Mesh(geometry, material);
-  // Return it so we can add it to the scene
-  return mesh;
-}
-
 function getRandomColor() {
   let colors = [
     "dodgerblue",
@@ -61,9 +51,21 @@ function getRandomColor() {
     "lightcoral",
     "papayawhip",
   ];
-
   let randomIndex = Math.floor(Math.random() * colors.length);
-  console.log(randomIndex);
+  return colors[randomIndex];
+}
+
+function createCube() {
+  // Geometry - The actual shape/skeleton of the object
+  let geometry = new THREE.BoxGeometry(4, 4, 4);
+  // Material - The colour/how it interacts with light
+  let material = new THREE.MeshLambertMaterial({
+    color: getRandomColor(),
+  });
+  // Create a mesh by combining the geometry and the material
+  let mesh = new THREE.Mesh(geometry, material);
+  // Return it so we can add it to the scene
+  return mesh;
 }
 
 function createSphere() {
@@ -71,7 +73,7 @@ function createSphere() {
   let geo = new THREE.SphereGeometry(4, 30, 30);
   // Material
   let mat = new THREE.MeshLambertMaterial({
-    color: "dodgerblue",
+    color: getRandomColor(),
   });
   // Mesh
   let mesh = new THREE.Mesh(geo, mat);
@@ -80,7 +82,7 @@ function createSphere() {
 }
 
 function createLight() {
-  let light = new THREE.PointLight("white", 1);
+  let light = new THREE.PointLight("white", 1.2);
   return light;
 }
 
@@ -104,16 +106,33 @@ light.position.z = 10;
 
 sphere.position.x = 20;
 
+let cubes = [];
+let cubeCount = 500;
+
+for (let i = 1; i < cubeCount; i += 1) {
+  let c = createCube();
+  c.position.x = Math.random() * 400 - 200;
+  c.position.y = Math.random() * 400 - 200;
+  c.position.z = Math.random() * 400 - 200;
+  cubes.push(c);
+}
+
 scene.add(axesHelper);
-scene.add(cube, sphere, light, lightHelper);
+scene.add(cube, sphere, light, lightHelper, ...cubes);
 
 renderer.render(scene, camera);
 
 function animate() {
-  // cube.rotation.z -= 0.1;
-  // cube.position.z -= 0.1;
-  // Muck around with the axes
-  // Increment and decrement the x, y, z
+  cube.rotation.z -= 0.01;
+  cube.rotation.y -= 0.01;
+  cube.rotation.x -= 0.01;
+
+  cubes.forEach(function (c) {
+    c.rotation.z -= 0.01;
+    c.rotation.y -= 0.01;
+    c.rotation.x -= 0.01;
+  });
+
   renderer.render(scene, camera);
   requestAnimationFrame(animate); // Can you call animate as soon as you can
 }
